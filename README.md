@@ -1,3 +1,4 @@
+<
 # Hipster Shop: Cloud-Native Microservices Demo Application
 
 This project contains a 10-tier microservices application. The application is a
@@ -269,3 +270,6 @@ resources.
 ---
 
 This is not an official Google project.
+=======
+# distrib
+>>>>>>> 638f6758d3c091473f2a02008ba129d35fee4b4b
