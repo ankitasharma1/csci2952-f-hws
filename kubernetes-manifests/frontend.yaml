@@ -82,7 +82,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    app: frontend
+    app: ambassador
   ports:
   - name: http
     port: 80
@@ -95,7 +95,7 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: frontend
+    app: ambassador
   ports:
   - name: http
     port: 80
