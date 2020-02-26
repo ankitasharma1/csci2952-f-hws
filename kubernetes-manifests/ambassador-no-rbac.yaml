@@ -22,14 +22,14 @@ spec:
   replicas: 3
   selector:
     matchLabels:
-      service: ambassador
+      app: ambassador
   template:
     metadata:
       annotations:
         sidecar.istio.io/inject: 'false'
         'consul.hashicorp.com/connect-inject': 'false'
       labels:
-        service: ambassador
+        app: ambassador
     spec:
       containers:
         - name: ambassador

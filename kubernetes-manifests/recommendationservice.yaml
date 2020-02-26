@@ -66,3 +66,13 @@ spec:
   - name: grpc
     port: 8080
     targetPort: 8080
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: recommendationservice-mapping
+spec:
+  grpc: True
+  prefix: /hipstershop.RecommendationService/
+  rewrite: /hipstershop.RecommendationService/
+  service: recommendationservice

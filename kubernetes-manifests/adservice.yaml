@@ -66,3 +66,13 @@ spec:
   - name: grpc
     port: 9555
     targetPort: 9555
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: adservice-mapping
+spec:
+  grpc: True
+  prefix: /hipstershop.AdService/
+  rewrite: /hipstershop.AdService/
+  service: adservice

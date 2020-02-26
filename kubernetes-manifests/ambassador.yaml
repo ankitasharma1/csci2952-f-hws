@@ -5,20 +5,11 @@ metadata:
   labels:
     service: ambassador
   name: ambassador
-  annotations:
-    getambassador.io/config: |
-      ---
-      apiVersion: ambassador/v0
-      kind:  Mapping
-      name:  httpbin_mapping
-      prefix: /httpbin/
-      service: httpbin.org:80
-      host_rewrite: httpbin.org
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   ports:
-  - name: ambassador
-    port: 8080
+  - name: http
+    port: 8888
     targetPort: 8080
   selector:
-    service: ambassador
+    app: ambassador

@@ -28,7 +28,6 @@ spec:
         sidecar.istio.io/rewriteAppHTTPProbers: "true"
     spec:
       terminationGracePeriodSeconds: 5
-      restartPolicy: Always
       containers:
       - name: main
         image: loadgenerator
