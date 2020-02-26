@@ -75,4 +75,4 @@ spec:
   grpc: True
   prefix: /hipstershop.RecommendationService/
   rewrite: /hipstershop.RecommendationService/
-  service: recommendationservice
+  service: recommendationservice:8080

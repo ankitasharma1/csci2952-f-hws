@@ -75,4 +75,4 @@ spec:
   grpc: True
   prefix: /hipstershop.AdService/
   rewrite: /hipstershop.AdService/
-  service: adservice
+  service: adservice:9555

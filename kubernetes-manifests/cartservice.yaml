@@ -76,4 +76,4 @@ spec:
   grpc: True
   prefix: /hipstershop.CartService/
   rewrite: /hipstershop.CartService/
-  service: cartservice
+  service: cartservice:7070
