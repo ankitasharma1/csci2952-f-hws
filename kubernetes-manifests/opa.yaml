@@ -1,0 +1,62 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opa
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opa
+  template:
+    metadata:
+      labels:
+        app: opa
+      name: opa
+    spec:
+      containers:
+        - name: opa
+          image: openpolicyagent/opa:latest-istio
+          volumeMounts:
+            - readOnly: true
+              mountPath: /policy
+              name: opa-policy
+          args:
+            - 'run'
+            - '--server'
+
+            # Use Envoy.authz
+            - '--set=plugins.envoy_ext_authz_grpc.addr=:9191'
+            - '--set=plugins.envoy_ext_authz_grpc.query=data.envoy.authz.allow'
+
+            - '--set=decision_logs.console=true'
+
+            - '/policy/policy.rego'
+          ports:
+            - name: http-api
+              containerPort: 8181
+            - name: grpc-api
+              containerPort: 9191
+      restartPolicy: Always
+      volumes:
+        - name: opa-policy
+          secret:
+            secretName: opa-policy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: opa
+spec:
+  type: ClusterIP
+  selector:
+    app: opa
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: http-api
+    - name: grpc
+      protocol: TCP
+      port: 9191
+      targetPort: grpc-api
