@@ -27,22 +27,20 @@ is_token_valid {
 # Check if path in scopes
 action_allowed {
   glob.match("/hipstershop.CartService/*", [], http_request.path)
-  is_array(token.payload.scopes)
   in_scope("cartservice")
 }
 
 action_allowed {
   glob.match("/hipstershop.AdService/*", [], http_request.path)
-  is_array(token.payload.scopes)
   in_scope("adservice")
 }
 
 action_allowed {
   glob.match("/hipstershop.RecommendationService/*", [], http_request.path)
-  is_array(token.payload.scopes)
   in_scope("recommendationservice")
 }
 
 in_scope(elem) {
+  is_array(token.payload.scopes)
   token.payload.scopes[_] = elem
 }
