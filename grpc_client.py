@@ -21,25 +21,30 @@ def cli(addr):
 @cli.command()
 @click.argument('user_id')
 @click.option('--token', help='authorization token to pass to gRPC server')
-def get_cart(user_id, token):
-    # open a gRPC channel
+def cart(user_id, token):
     with grpc.insecure_channel(config['addr']) as channel:
-        # create a stub (client)
         stub = pb.demo_pb2_grpc.CartServiceStub(channel)
-
-        # create a valid request message
         request = pb.demo_pb2.GetCartRequest(user_id=user_id)
+        call_method(stub.GetCart, request, metadata=get_metadata(token))
 
-        try:
-            # Pass metadata and call method
-            response, call = stub.GetCart.with_call(request, metadata=get_metadata(token))
-            click.secho('Response received:', fg='green')
-            print(response)
-        except grpc.RpcError as rpc_error:
-            # Handle error
-            click.secho('RPC failed:', fg='red')
-            print(rpc_error)
-            sys.exit(1)
+
+@cli.command()
+@click.option('--token', help='authorization token to pass to gRPC server')
+def ad(token):
+    with grpc.insecure_channel(config['addr']) as channel:
+        stub = pb.demo_pb2_grpc.AdServiceStub(channel)
+        request = pb.demo_pb2.AdRequest()
+        call_method(stub.GetAds, request, metadata=get_metadata(token))
+
+
+@cli.command()
+@click.argument('user_id')
+@click.option('--token', help='authorization token to pass to gRPC server')
+def rec(user_id, token):
+    with grpc.insecure_channel(config['addr']) as channel:
+        stub = pb.demo_pb2_grpc.RecommendationServiceStub(channel)
+        request = pb.demo_pb2.ListRecommendationsRequest(user_id=user_id, product_ids=[])
+        call_method(stub.ListRecommendations, request, metadata=get_metadata(token))
 
 
 def get_metadata(token):
@@ -49,15 +54,18 @@ def get_metadata(token):
     return tuple()
 
 
+def call_method(method, request, metadata=tuple()):
+    try:
+        # Pass metadata and call method
+        response, call = method.with_call(request, metadata=metadata)
+        click.secho('Response received:', fg='green')
+        print(response)
+    except grpc.RpcError as rpc_error:
+        # Handle error
+        click.secho('RPC failed:', fg='red')
+        print(rpc_error)
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     cli()
-
-# TODO
-# stub_ad = pb.demo_pb2_grpc.AdServiceStub(channel)
-# stub_rec = pb.demo_pb2_grpc.RecommendationServiceStub(channel)
-
-# ad_request = pb.demo_pb2.AdRequest()
-# response_ad = stub_ad.GetAds(ad_request)
-
-# rec_request = pb.demo_pb2.ListRecommendationsRequest()
-# response_rec = stub_rec.ListRecommendations(rec_request)
