@@ -59,6 +59,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cartservice
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: cart-mapping
+      grpc: True
+      prefix: /hipstershop.CartService/
+      rewrite: /hipstershop.CartService/
+      service: cartservice:7070
 spec:
   type: ClusterIP
   selector:
@@ -67,13 +77,3 @@ spec:
   - name: grpc
     port: 7070
     targetPort: 7070
----
-apiVersion: getambassador.io/v2
-kind: Mapping
-metadata:
-  name: cart-mapping
-spec:
-  grpc: True
-  prefix: /hipstershop.CartService/
-  rewrite: /hipstershop.CartService/
-  service: cartservice:7070
