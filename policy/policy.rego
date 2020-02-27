@@ -1,4 +1,4 @@
-package envoy.authz
+package ambassador.authz
 
 import input.attributes.request.http as http_request
 
@@ -6,7 +6,8 @@ default allow = false
 
 token = {"valid": valid, "payload": payload} {
     [_, encoded] := split(http_request.headers.authorization, " ")
-    [valid, _, payload] := io.jwt.decode_verify(encoded, {"secret": "MySuperSecretKey", "alg": "hs256"})
+    # TODO: Move secret key out of policy?
+    [valid, _, payload] := io.jwt.decode_verify(encoded, {"secret": "MySuperSecretKey", "alg": "HS256"})
 }
 
 allow {
@@ -18,12 +19,30 @@ allow {
 is_token_valid {
   token.valid
   # "Not Before" claim is not before current time
-  token.payload.nbf <= time.now_ns()
+  token.payload.nbf * 1000000000 <= time.now_ns()
   # "Expiration" claim is after current time
-  time.now_ns() < token.payload.exp
+  time.now_ns() < token.payload.exp * 1000000000
 }
 
-# Allow all CartService requests to pass
+# Check if path in scopes
 action_allowed {
   glob.match("/hipstershop.CartService/*", [], http_request.path)
+  is_array(token.payload.scopes)
+  in_scope("cartservice")
+}
+
+action_allowed {
+  glob.match("/hipstershop.AdService/*", [], http_request.path)
+  is_array(token.payload.scopes)
+  in_scope("adservice")
+}
+
+action_allowed {
+  glob.match("/hipstershop.RecommendationService/*", [], http_request.path)
+  is_array(token.payload.scopes)
+  in_scope("recommendationservice")
+}
+
+in_scope(elem) {
+  token.payload.scopes[_] = elem
 }

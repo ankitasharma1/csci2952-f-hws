@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: opa
-          image: openpolicyagent/opa:latest-istio
+          image: irvinlim/opa-ambassador-plugin
           volumeMounts:
             - readOnly: true
               mountPath: /policy
@@ -24,13 +24,9 @@ spec:
           args:
             - 'run'
             - '--server'
-
-            # Use Envoy.authz
-            - '--set=plugins.envoy_ext_authz_grpc.addr=:9191'
-            - '--set=plugins.envoy_ext_authz_grpc.query=data.envoy.authz.allow'
-
+            - '--set=plugins.ambassador_ext_authz_grpc.addr=:9191'
+            - '--set=plugins.ambassador_ext_authz_grpc.path=ambassador/authz/allow'
             - '--set=decision_logs.console=true'
-
             - '/policy/policy.rego'
           ports:
             - name: http-api
@@ -60,3 +56,11 @@ spec:
       protocol: TCP
       port: 9191
       targetPort: grpc-api
+---
+apiVersion: getambassador.io/v2
+kind: AuthService
+metadata:
+  name: authentication
+spec:
+  auth_service: opa:9191
+  proto: grpc
