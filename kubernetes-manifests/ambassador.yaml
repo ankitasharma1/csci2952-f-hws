@@ -68,3 +68,13 @@ spec:
     targetPort: 8080
   selector:
     app: ambassador
+---
+apiVersion: getambassador.io/v2
+kind: AuthService
+metadata:
+  name: authentication
+spec:
+  auth_service: opa:9191
+  proto: grpc
+  status_on_error:
+    code: 503
