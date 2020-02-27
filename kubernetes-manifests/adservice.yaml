@@ -58,6 +58,16 @@ apiVersion: v1
 kind: Service
 metadata:
   name: adservice
+  annotations:
+    getambassador.io/config: |
+      ---
+      apiVersion: ambassador/v1
+      kind: Mapping
+      name: adservice-mapping
+      grpc: True
+      prefix: /hipstershop.AdService/
+      rewrite: /hipstershop.AdService/
+      service: adservice:9555
 spec:
   type: ClusterIP
   selector:
@@ -66,13 +76,3 @@ spec:
   - name: grpc
     port: 9555
     targetPort: 9555
----
-apiVersion: getambassador.io/v2
-kind: Mapping
-metadata:
-  name: adservice-mapping
-spec:
-  grpc: True
-  prefix: /hipstershop.AdService/
-  rewrite: /hipstershop.AdService/
-  service: adservice:9555

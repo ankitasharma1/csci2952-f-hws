@@ -1,26 +1,34 @@
 import sys
-
 import grpc
 
 # import the generated classes
 import pb.demo_pb2
 import pb.demo_pb2_grpc
 
-# open a gRPC channel
-channel = grpc.insecure_channel('localhost:8888')
+NUM_PARAMS = 2
 
-# create a stub (client)
-stub_cart = pb.demo_pb2_grpc.CartServiceStub(channel)
-# stub_ad = pb.demo_pb2_grpc.AdServiceStub(channel)
-# stub_rec = pb.demo_pb2_grpc.RecommendationServiceStub(channel)
+if len(sys.argv) >= NUM_PARAMS:
+    service = sys.argv[1]
 
-# create a valid request message
-cart_request = pb.demo_pb2.GetCartRequest(user_id=sys.argv[1])
-response_cart = stub_cart.GetCart(cart_request)
-print(response_cart)
+    # open a gRPC channel
+    channel = grpc.insecure_channel('localhost:8888')
 
-# ad_request = pb.demo_pb2.AdRequest()
-# response_ad = stub_ad.GetAds(ad_request)
-
-# rec_request = pb.demo_pb2.ListRecommendationsRequest()
-# response_rec = stub_rec.ListRecommendations(rec_request)
+    if service == "cart":
+        param = sys.argv[2]
+        stub_cart = pb.demo_pb2_grpc.CartServiceStub(channel)
+        cart_request = pb.demo_pb2.GetCartRequest(user_id=param)
+        response_cart = stub_cart.GetCart(cart_request)
+        print(response_cart)
+    elif service == "ad":
+        stub_ad = pb.demo_pb2_grpc.AdServiceStub(channel)
+        ad_request = pb.demo_pb2.AdRequest()
+        response_ad = stub_ad.GetAds(ad_request)
+        print(response_ad)
+    elif service == "rec":
+        param = sys.argv[2]        
+        stub_rec = pb.demo_pb2_grpc.RecommendationServiceStub(channel)
+        rec_request = pb.demo_pb2.ListRecommendationsRequest(user_id=param, product_ids=[])
+        response_rec = stub_rec.ListRecommendations(rec_request)
+        print(response_rec)
+else:
+    print("Require [service] [param]")
