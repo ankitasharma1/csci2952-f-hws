@@ -1,4 +1,5 @@
 import time
+import sys
 
 import click
 import jwt
@@ -12,9 +13,15 @@ ALL_SCOPES = ['adservice', 'cartservice', 'recommendationservice']
 @click.option('--scopes', default='', help='List of scopes for the user token. Defaults to all scopes.')
 def main(key, exp, scopes):
     if scopes == '':
-        scopes = ALL_SCOPES
+        scope_list = ALL_SCOPES
     else:
-        scopes = [scope.strip() for scope in scopes.split(',') if scope in ALL_SCOPES]
+        scope_list = []
+        for scope in scopes.split(','):
+            if scope not in ALL_SCOPES:
+                click.secho(f'Invalid scope specified: {scope}', fg='red')
+                click.secho(f'Allowed scopes: {ALL_SCOPES}', fg='yellow')
+                sys.exit(1)
+            scope_list.append(scope)
 
     iat = int(time.time())
     payload = {
@@ -24,7 +31,7 @@ def main(key, exp, scopes):
         'exp': iat + exp,  # Expiration
 
         # Private claims
-        'scopes': scopes,
+        'scopes': scope_list,
     }
     token = jwt.encode(payload, key, algorithm='HS256')
 
