@@ -15,7 +15,10 @@
 # limitations under the License.
 
 import random
-from locust import HttpLocust, TaskSet
+import time
+
+import jwt
+from locust import HttpLocust, TaskSet, task
 
 products = [
     '0PUK6V6EV0',
@@ -26,55 +29,85 @@ products = [
     '9SIQT8TOJO',
     'L9ECAV7KIM',
     'LS4PSXUNUM',
-    'OLJCESPC7Z']
+    'OLJCESPC7Z',
+]
 
-def index(l):
-    l.client.get("/")
 
-def setCurrency(l):
-    currencies = ['EUR', 'USD', 'JPY', 'CAD']
-    l.client.post("/setCurrency",
-        {'currency_code': random.choice(currencies)})
+def create_token():
+    """
+    Creates a JWT token to pass to all requests.
+    See gen_token.py in the root directory.
+    """
 
-def browseProduct(l):
-    l.client.get("/product/" + random.choice(products))
+    iat = int(time.time())
+    exp = 60 * 60 * 24 * 365  # 1 year
+    payload = {
+        # Public claims
+        'iat': iat,  # Issued At
+        'nbf': iat,  # Not Before
+        'exp': iat + exp,  # Expiration
 
-def viewCart(l):
-    l.client.get("/cart")
+        # Private claims
+        'scopes': ['frontend'],
+    }
 
-def addToCart(l):
-    product = random.choice(products)
-    l.client.get("/product/" + product)
-    l.client.post("/cart", {
-        'product_id': product,
-        'quantity': random.choice([1,2,3,4,5,10])})
+    # Remember to update secret key if it is changed
+    token = jwt.encode(payload, "MySuperSecretKey", algorithm='HS256')
 
-def checkout(l):
-    addToCart(l)
-    l.client.post("/cart/checkout", {
-        'email': 'someone@example.com',
-        'street_address': '1600 Amphitheatre Parkway',
-        'zip_code': '94043',
-        'city': 'Mountain View',
-        'state': 'CA',
-        'country': 'United States',
-        'credit_card_number': '4432-8015-6152-0454',
-        'credit_card_expiration_month': '1',
-        'credit_card_expiration_year': '2039',
-        'credit_card_cvv': '672',
-    })
+    return token.decode('utf-8')
+
 
 class UserBehavior(TaskSet):
+    headers = {}
 
     def on_start(self):
-        index(self)
+        # Create headers
+        token = create_token()
+        self.headers['Authorization'] = 'Bearer ' + token
 
-    tasks = {index: 1,
-        setCurrency: 2,
-        browseProduct: 10,
-        addToCart: 2,
-        viewCart: 3,
-        checkout: 1}
+        self.index()
+
+    @task(1)
+    def index(self):
+        self.client.get("/", headers=self.headers)
+
+    @task(2)
+    def setCurrency(self):
+        currencies = ['EUR', 'USD', 'JPY', 'CAD']
+        self.client.post("/setCurrency", {'currency_code': random.choice(currencies)}, headers=self.headers)
+
+    @task(10)
+    def browseProduct(self):
+        self.client.get("/product/" + random.choice(products), headers=self.headers)
+
+    @task(3)
+    def viewCart(self):
+        self.client.get("/cart", headers=self.headers)
+
+    @task(2)
+    def addToCart(self):
+        product = random.choice(products)
+        self.client.get("/product/" + product, headers=self.headers)
+        self.client.post("/cart", {'product_id': product, 'quantity': random.choice([1, 2, 3, 4, 5, 10])}, headers=self.headers)
+
+    @task(1)
+    def checkout(self):
+        addToCart(l)
+        self.client.post(
+            "/cart/checkout", {
+                'email': 'someone@example.com',
+                'street_address': '1600 Amphitheatre Parkway',
+                'zip_code': '94043',
+                'city': 'Mountain View',
+                'state': 'CA',
+                'country': 'United States',
+                'credit_card_number': '4432-8015-6152-0454',
+                'credit_card_expiration_month': '1',
+                'credit_card_expiration_year': '2039',
+                'credit_card_cvv': '672',
+            }, headers=self.headers
+        )
+
 
 class WebsiteUser(HttpLocust):
     task_set = UserBehavior

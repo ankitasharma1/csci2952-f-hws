@@ -24,8 +24,11 @@ fi
 
 set -x
 
+# generate token
+TOKEN=`python ./gen_token.py --key=MySuperSecretKey --scopes=frontend --exp=86400 | tail -n 1`
+
 # if one request to the frontend fails, then exit
-STATUSCODE=$(curl --silent --output /dev/stderr --write-out "%{http_code}" http://${FRONTEND_ADDR})
+STATUSCODE=$(curl -H "Authorization: Bearer ${TOKEN}" --silent --output /dev/stderr --write-out "%{http_code}" http://${FRONTEND_ADDR})
 if test $STATUSCODE -ne 200; then
     echo "Error: Could not reach frontend - Status code: ${STATUSCODE}"
     exit 1
