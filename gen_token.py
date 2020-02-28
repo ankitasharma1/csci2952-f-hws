@@ -4,7 +4,7 @@ import sys
 import click
 import jwt
 
-ALL_SCOPES = ['adservice', 'cartservice', 'recommendationservice']
+ALL_SCOPES = ['adservice', 'cartservice', 'recommendationservice', 'frontend']
 
 
 @click.command()

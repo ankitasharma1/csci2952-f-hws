@@ -40,6 +40,11 @@ action_allowed {
   in_scope("recommendationservice")
 }
 
+action_allowed {
+  glob.match("/*", [], http_request.path)
+  in_scope("frontend")
+}
+
 in_scope(elem) {
   is_array(token.payload.scopes)
   token.payload.scopes[_] = elem
